@@ -1,8 +1,8 @@
-# 🐉 DracoPact Technical Architecture
+# 🐉 WyrmWard Technical Architecture
 
 ## 1. System Overview
 
-**DracoPact** is an autonomous governance covenant and revision sentry built on GenLayer. It enforces strict cryptographic, deterministic, and semantic boundaries over DAO charters, treasury allocations, and grant covenants.
+**WyrmWard** is an autonomous governance covenant and revision sentry built on GenLayer. It enforces strict cryptographic, deterministic, and semantic boundaries over DAO charters, treasury allocations, and grant covenants.
 
 ---
 
@@ -42,7 +42,7 @@ flowchart TD
 
 ## 3. Storage Architecture
 
-DracoPact utilizes GenVM's persistent storage primitives (`TreeMap[u256, str]`) with canonical JSON normalization to prevent state divergence and optimize validator memory:
+WyrmWard utilizes GenVM's persistent storage primitives (`TreeMap[u256, str]`) with canonical JSON normalization to prevent state divergence and optimize validator memory:
 
 - `covenants: TreeMap[u256, str]`: Maps covenant IDs to primary registry records.
 - `codicils: TreeMap[u256, str]`: Maps revision/codicil IDs to immutable revision records.

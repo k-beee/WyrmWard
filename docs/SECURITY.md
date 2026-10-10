@@ -1,8 +1,8 @@
-# 🛡️ DracoPact Security Policy & Vulnerability Disclosure
+# 🛡️ WyrmWard Security Policy & Vulnerability Disclosure
 
 ## 1. Security Philosophy
 
-DracoPact is architected on the premise that natural language governance covenants and deterministic calldata actions must be independently audited with zero trust placed in centralized bots or single AI models.
+WyrmWard is architected on the premise that natural language governance covenants and deterministic calldata actions must be independently audited with zero trust placed in centralized bots or single AI models.
 
 ### Key Security Axioms
 1. **Machine Isolation**: Calldata differences are computed by pure deterministic code, not by AI models.
@@ -13,7 +13,7 @@ DracoPact is architected on the premise that natural language governance covenan
 
 ## 2. Reporting a Vulnerability
 
-If you discover a potential vulnerability in the DracoPact contract or client interfaces, please report it privately:
+If you discover a potential vulnerability in the WyrmWard contract or client interfaces, please report it privately:
 
 - **Security Point of Contact:** `k-beee` via GitHub Security Advisories
 - **PGP Encryption:** Available upon request

@@ -1,11 +1,11 @@
-# 🐉 DRACOPACT
+# 🐉 WYRM WARD
 
 > **Autonomous Governance Covenant & Revision Sentry on GenLayer**  
 > *Governed by Deterministic Calldata Machine Sentry, Multi-Validator Comparative AI Consensus, and Sovereign Guardian Enactment Gates.*
 
 [![GenLayer Studio Next](https://img.shields.io/badge/GenLayer-Studio_Next_61997-f59e0b?style=for-the-badge&logo=ethereum&logoColor=black)](https://explorer-studio-next.genlayer.com)
-[![GenVM Linter](https://img.shields.io/badge/GenVM_Linter-3_Checks_Passed-10b981?style=for-the-badge)](contracts/draco_pact.py)
-[![Test Suite](https://img.shields.io/badge/Pytest-21_Passed-10b981?style=for-the-badge)](tests/test_draco_pact.py)
+[![GenVM Linter](https://img.shields.io/badge/GenVM_Linter-3_Checks_Passed-10b981?style=for-the-badge)](contracts/wyrm_ward.py)
+[![Test Suite](https://img.shields.io/badge/Pytest-21_Passed-10b981?style=for-the-badge)](tests/test_wyrm_ward.py)
 [![Frontend](https://img.shields.io/badge/React_19-TypeScript_Vite-6366f1?style=for-the-badge)](frontend/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -20,13 +20,13 @@ In decentralized autonomous organizations (DAOs), foundational covenants, grant 
 - **The Oracle Fragility Trap:** Offloading text verification to centralized off-chain bots creates single points of failure, censorship vectors, and front-running risks.
 - **The Rogue AI Execution Vector:** Entrusting execution authority directly to autonomous AI models risks disastrous hallucinations triggering state transactions.
 
-**DracoPact** solves this by establishing a decentralized, fail-closed revision defense citadel on GenLayer. It decouples deterministic transaction calldata inspection from multi-validator semantic disclosure analysis, guaranteeing that no governance revision can become active canon without transparent disclosure and explicit guardian authorization.
+**WyrmWard** solves this by establishing a decentralized, fail-closed revision defense citadel on GenLayer. It decouples deterministic transaction calldata inspection from multi-validator semantic disclosure analysis, guaranteeing that no governance revision can become active canon without transparent disclosure and explicit guardian authorization.
 
 ---
 
 ## 🐉 The Dragon Sentry Architecture Radar
 
-DracoPact enforces an unyielding three-gate defense pipeline:
+WyrmWard enforces an unyielding three-gate defense pipeline:
 
 ```mermaid
 flowchart TD
@@ -91,7 +91,7 @@ All 4 layers pass automated checks via `./verify.sh`:
 
 ### 1. GenVM Linter
 ```bash
-python3 -X utf8 -m genvm_linter.cli contracts/draco_pact.py
+python3 -X utf8 -m genvm_linter.cli contracts/wyrm_ward.py
 ```
 *Expected Output:* `✓ Lint passed (3 checks, 0 errors)`
 
@@ -119,7 +119,7 @@ cd frontend && npm run build
 
 1. Open [GenLayer Studio IDE](https://studio.genlayer.com).
 2. Connect to **GenLayer Studio Next (Chain ID: 61997)**.
-3. Import `contracts/draco_pact.py`.
+3. Import `contracts/wyrm_ward.py`.
 4. Deploy the contract (the constructor initializes storage automatically with zero arguments).
 5. Copy the deployed contract address (`0x...`).
 6. Configure `frontend/.env`:

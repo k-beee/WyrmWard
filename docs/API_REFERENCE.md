@@ -1,6 +1,6 @@
-# 📖 DracoPact Contract API Reference
+# 📖 WyrmWard Contract API Reference
 
-Comprehensive reference for the `DracoPact` GenVM Intelligent Contract (`contracts/draco_pact.py`).
+Comprehensive reference for the `WyrmWard` GenVM Intelligent Contract (`contracts/wyrm_ward.py`).
 
 ---
 

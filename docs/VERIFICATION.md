@@ -1,12 +1,12 @@
-# 🧪 DracoPact Verification & Test Manifest
+# 🧪 WyrmWard Verification & Test Manifest
 
 ## 1. Automated Verification Pipeline
 
-DracoPact enforces four rigorous verification layers:
+WyrmWard enforces four rigorous verification layers:
 
 | Layer | Execution Command | Result |
 |---|---|---|
-| **GenVM Linter** | `python3 -X utf8 -m genvm_linter.cli contracts/draco_pact.py` | `✓ Lint passed (3 checks, 0 errors)` |
+| **GenVM Linter** | `python3 -X utf8 -m genvm_linter.cli contracts/wyrm_ward.py` | `✓ Lint passed (3 checks, 0 errors)` |
 | **Intelligent Contract Tests** | `python3 -m pytest tests -q` | `21 passed in 0.03s` |
 | **Frontend Lifecycle Tests** | `npm test` (inside `frontend/`) | `3 passed in 0.14s` |
 | **Production Web Build** | `npm run build` (inside `frontend/`) | `✓ Clean TypeScript/Vite bundle in <600ms` |
