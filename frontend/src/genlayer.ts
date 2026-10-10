@@ -3,7 +3,7 @@ import { studioDevnet } from 'genlayer-js/chains';
 import type { CalldataEncodable } from 'genlayer-js/types';
 
 // Environment configuration
-const env = (import.meta.env || {}) as Record<string, string | undefined>;
+const env = ((import.meta as any).env || {}) as Record<string, string | undefined>;
 export const CONTRACT_ADDRESS = (env.VITE_CONTRACT_ADDRESS || '').trim();
 export const isConfigured = /^0x[a-fA-F0-9]{40}$/.test(CONTRACT_ADDRESS);
 
@@ -22,7 +22,7 @@ export const DRACO_PACT_CHAIN = {
 const rpcReader = createClient({ chain: DRACO_PACT_CHAIN });
 
 export async function connectWallet(): Promise<string> {
-  const provider = window.ethereum;
+  const provider = (window as any).ethereum;
   if (!provider?.request) {
     throw new Error('Please install a compatible Web3 wallet (MetaMask, Rabby, etc.).');
   }
@@ -50,12 +50,12 @@ export async function readContractState<T>(
   }
 
   const result = await rpcReader.readContract({
-    address: CONTRACT_ADDRESS,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     functionName,
     args,
     stateStatus: 'finalized',
     jsonSafeReturn: true,
-  });
+  } as never);
 
   return result as T;
 }
@@ -69,7 +69,7 @@ export async function executeContractTransaction(
     throw new Error('Contract address is not configured. Set VITE_CONTRACT_ADDRESS.');
   }
 
-  const provider = window.ethereum;
+  const provider = (window as any).ethereum;
   if (!provider) {
     throw new Error('Injected wallet provider unavailable.');
   }
@@ -92,7 +92,7 @@ export async function executeContractTransaction(
   });
 
   const rawTx: any = await client.writeContract({
-    address: CONTRACT_ADDRESS,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     functionName,
     args,
     fees: {
