@@ -25,7 +25,7 @@ const chain = {
 const account = createAccount(PRIVATE_KEY);
 const client = createClient({ chain, account });
 
-console.log('Running DracoPact on-chain lifecycle test...');
+console.log('Running WyrmWard on-chain lifecycle test...');
 console.log('Operator Address:', account.address);
 console.log('Contract Address:', CONTRACT_ADDRESS);
 
