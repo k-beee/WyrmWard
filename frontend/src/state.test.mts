@@ -7,7 +7,7 @@ import {
   calculateRiskCategory,
 } from './helpers.ts';
 
-describe('DracoPact state and lifecycle rules', () => {
+describe('WyrmWard state and lifecycle rules', () => {
   it('correctly maps actionable codicil states', () => {
     assert.equal(isCodicilAdjudicable('CODICIL_PENDING'), true);
     assert.equal(isCodicilAdjudicable('CONSENSUS_STALEMATE'), true);

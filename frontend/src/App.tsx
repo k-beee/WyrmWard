@@ -381,7 +381,7 @@ export const App: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-lg text-white tracking-wide font-sans">DracoPact</h1>
+                <h1 className="font-bold text-lg text-white tracking-wide font-sans">WyrmWard</h1>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 font-mono">
                   v1.0 GenVM
                 </span>
@@ -1025,7 +1025,7 @@ export const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-2">
             <span>🐉</span>
-            <span className="font-semibold text-slate-400">DracoPact Protocol</span>
+            <span className="font-semibold text-slate-400">WyrmWard Protocol</span>
             <span>&bull;</span>
             <span>GenLayer Studio Next (61997)</span>
           </div>
