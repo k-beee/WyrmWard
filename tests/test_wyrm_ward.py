@@ -31,7 +31,7 @@ def create_covenant(contract, name="Security Guild Treasury Covenant", domain="T
 
 def test_seal_covenant_initializes_epoch_one(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
 
     cid = create_covenant(contract)
     assert int(cid) == 1
@@ -55,28 +55,28 @@ def test_seal_covenant_initializes_epoch_one(setup_mock_genlayer):
 
 def test_seal_covenant_rejects_short_name(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     with pytest.raises(UserError, match="COVENANT_NAME_TOO_SHORT"):
         contract.seal_covenant("DAO", "TREASURY_ALLOCATION", COVENANT_BASELINE_PROSE, json.dumps(BASELINE_ACTIONS))
 
 
 def test_seal_covenant_rejects_invalid_domain(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     with pytest.raises(UserError, match="INVALID_COVENANT_DOMAIN"):
         contract.seal_covenant("Treasury Guard", "RANDOM_DOMAIN", COVENANT_BASELINE_PROSE, json.dumps(BASELINE_ACTIONS))
 
 
 def test_seal_covenant_rejects_short_prose(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     with pytest.raises(UserError, match="COVENANT_PROSE_TOO_SHORT"):
         contract.seal_covenant("Treasury Guard", "TREASURY_ALLOCATION", "Too brief text.", json.dumps(BASELINE_ACTIONS))
 
 
 def test_seal_covenant_rejects_malformed_manifest_json(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     with pytest.raises(UserError, match="INVALID_ACTION_MANIFEST"):
         contract.seal_covenant("Treasury Guard", "TREASURY_ALLOCATION", COVENANT_BASELINE_PROSE, "invalid-json")
 
@@ -87,7 +87,7 @@ def test_seal_covenant_rejects_malformed_manifest_json(setup_mock_genlayer):
 
 def test_submit_codicil_detects_capital_delta(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -109,7 +109,7 @@ def test_submit_codicil_detects_capital_delta(setup_mock_genlayer):
 
 def test_submit_codicil_detects_recipient_divergence(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -130,7 +130,7 @@ def test_submit_codicil_detects_recipient_divergence(setup_mock_genlayer):
 
 def test_submit_codicil_rejects_stale_expected_epoch(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -148,7 +148,7 @@ def test_submit_codicil_rejects_stale_expected_epoch(setup_mock_genlayer):
 
 def test_submit_codicil_rejects_parent_hash_mismatch(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
 
@@ -169,7 +169,7 @@ def test_submit_codicil_rejects_parent_hash_mismatch(setup_mock_genlayer):
 
 def test_detects_zero_address_recipient_alert(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -196,7 +196,7 @@ def test_detects_zero_address_recipient_alert(setup_mock_genlayer):
 
 def test_detects_unlimited_allowance_alert(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -228,7 +228,7 @@ def test_detects_unlimited_allowance_alert(setup_mock_genlayer):
 def test_adjudicate_certifies_disclosed_expansion(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -263,7 +263,7 @@ def test_adjudicate_certifies_disclosed_expansion(setup_mock_genlayer):
 def test_adjudicate_certifies_editorial_clarification(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -295,7 +295,7 @@ def test_adjudicate_certifies_editorial_clarification(setup_mock_genlayer):
 def test_adjudicate_vetoes_concealed_expansion(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -329,7 +329,7 @@ def test_adjudicate_vetoes_concealed_expansion(setup_mock_genlayer):
 def test_deterministic_override_blocks_hallucinating_model(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -362,7 +362,7 @@ def test_deterministic_override_blocks_hallucinating_model(setup_mock_genlayer):
 def test_adjudicate_handles_consensus_stalemate(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -394,7 +394,7 @@ def test_adjudicate_handles_consensus_stalemate(setup_mock_genlayer):
 def test_commit_codicil_atomically_advances_epoch(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -437,7 +437,7 @@ def test_commit_codicil_rejects_unauthorized_outsider(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
     caller_state = setup_mock_genlayer["caller_state"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -468,7 +468,7 @@ def test_commit_codicil_rejects_unauthorized_outsider(setup_mock_genlayer):
 
 def test_commit_codicil_rejects_uncertified_status(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -490,7 +490,7 @@ def test_commit_codicil_rejects_uncertified_status(setup_mock_genlayer):
 def test_commit_codicil_rejects_parent_epoch_mismatch(setup_mock_genlayer):
     gl_mock = setup_mock_genlayer["gl"]
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     cid = create_covenant(contract)
     covenant = contract.get_covenant(cid)
     baseline = contract.get_codicil(covenant["active_codicil_id"])
@@ -521,7 +521,7 @@ def test_commit_codicil_rejects_parent_epoch_mismatch(setup_mock_genlayer):
 
 def test_protocol_telemetry_and_metadata(setup_mock_genlayer):
     module = setup_mock_genlayer["module"]
-    contract = module.DracoPact()
+    contract = module.WyrmWard()
     create_covenant(contract)
 
     telemetry = contract.get_protocol_telemetry()
@@ -530,6 +530,6 @@ def test_protocol_telemetry_and_metadata(setup_mock_genlayer):
     assert telemetry["verdicts"] == 0
 
     meta = contract.get_protocol_metadata()
-    assert meta["protocol_name"] == "DracoPact"
+    assert meta["protocol_name"] == "WyrmWard"
     assert meta["architecture"] == "multi-validator-covenant-revision-sentry"
     assert meta["custodial_funds"] is False

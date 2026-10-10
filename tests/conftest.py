@@ -135,9 +135,9 @@ def setup_mock_genlayer(monkeypatch):
 
     monkeypatch.setitem(sys.modules, "genlayer", genlayer_mod)
 
-    # Load contracts/draco_pact.py
-    contract_path = Path(__file__).parent.parent / "contracts" / "draco_pact.py"
-    spec = importlib.util.spec_from_file_location("draco_pact_module", contract_path)
+    # Load contracts/wyrm_ward.py
+    contract_path = Path(__file__).parent.parent / "contracts" / "wyrm_ward.py"
+    spec = importlib.util.spec_from_file_location("wyrm_ward_module", contract_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
