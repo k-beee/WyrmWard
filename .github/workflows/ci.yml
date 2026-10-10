@@ -1,0 +1,48 @@
+name: DracoPact CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run GenVM Linter
+        run: |
+          python3 -X utf8 -m genvm_linter.cli contracts/draco_pact.py
+
+      - name: Run Contract Unit Tests
+        run: |
+          python3 -m pytest tests -q
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Run Frontend Tests & Build
+        run: |
+          cd frontend
+          npm ci
+          npm test
+          npm run build
