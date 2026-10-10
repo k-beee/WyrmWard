@@ -1,2 +1,2 @@
-contracts_dir: contracts
-artifacts_dir: artifacts
+paths:
+  contracts: contracts
