@@ -1,4 +1,4 @@
-name: DracoPact CI
+name: WyrmWard CI
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Run GenVM Linter
         run: |
-          python3 -X utf8 -m genvm_linter.cli contracts/draco_pact.py
+          python3 -X utf8 -m genvm_linter.cli contracts/wyrm_ward.py
 
       - name: Run Contract Unit Tests
         run: |
