@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --dp-bg-void: #07080c;
   --dp-bg-surface: #0f121a;
