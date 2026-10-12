@@ -123,17 +123,22 @@ class MockGenLayer:
 @pytest.fixture(autouse=True)
 def setup_mock_genlayer(monkeypatch):
     gl_mock = MockGenLayer()
-    monkeypatch.setitem(sys.modules, "genlayer", gl_mock)
-
     caller_state = {"address": GUARDIAN_A}
     block_state = {"timestamp": 1700000000}
+
+    class MessageMock:
+        @property
+        def sender_address(self):
+            return caller_state["address"]
+
+    gl_mock.message = MessageMock()
+    gl_mock.message_raw = {"datetime": "2023-11-14T22:13:20Z"}
 
     genlayer_mod = types.ModuleType("genlayer")
     genlayer_mod.gl = gl_mock
     genlayer_mod.u256 = U256
     genlayer_mod.TreeMap = TreeMap
-    genlayer_mod.get_caller_address = lambda: caller_state["address"]
-    genlayer_mod.get_block_timestamp = lambda: block_state["timestamp"]
+    genlayer_mod.Contract = object
 
     monkeypatch.setitem(sys.modules, "genlayer", genlayer_mod)
 

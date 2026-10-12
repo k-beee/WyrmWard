@@ -32,6 +32,28 @@ import hashlib
 import json
 import re
 import typing
+from datetime import datetime
+
+
+def get_caller_address() -> str:
+    """Retrieves normalized lowercase caller address from GenVM message context."""
+    try:
+        return str(gl.message.sender_address).lower()
+    except Exception:
+        return "0x0000000000000000000000000000000000000000"
+
+
+def get_block_timestamp() -> int:
+    """Retrieves UNIX timestamp from GenVM message datetime."""
+    try:
+        raw = getattr(gl, "message_raw", None)
+        if raw and isinstance(raw, dict) and "datetime" in raw:
+            dt_str = str(raw["datetime"]).replace("Z", "+00:00")
+            return int(datetime.fromisoformat(dt_str).timestamp())
+    except Exception:
+        pass
+    return 0
+
 
 # Validation patterns
 ETH_ADDRESS_PATTERN = re.compile(r"^0x[0-9a-fA-F]{40}$")
