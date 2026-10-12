@@ -189,8 +189,7 @@ def inspect_manifest_divergence(baseline_actions: list, proposed_actions: list) 
     return sorted(flags)
 
 
-@gl.contract
-class WyrmWard:
+class WyrmWard(gl.Contract):
     """
     Autonomous Governance Covenant & Revision Sentry Contract.
     Enforces deterministic machine checks and multi-validator AI consensus

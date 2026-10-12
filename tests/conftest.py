@@ -107,6 +107,8 @@ class EqPrinciple:
 
 
 class MockGenLayer:
+    Contract = object
+
     def __init__(self):
         self.vm = types.SimpleNamespace(UserError=UserError)
         self.public = Public()
