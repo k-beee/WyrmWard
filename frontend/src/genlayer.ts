@@ -4,7 +4,7 @@ import type { CalldataEncodable } from 'genlayer-js/types';
 
 // Environment configuration
 const env = ((import.meta as any).env || {}) as Record<string, string | undefined>;
-export const CONTRACT_ADDRESS = (env.VITE_CONTRACT_ADDRESS || '0xE070F977429707e9c2dd2eb7E4B58404627f3363').trim();
+export const CONTRACT_ADDRESS = (env.VITE_CONTRACT_ADDRESS || '0xfd07c5C81125573af97D70fe8A704E9a7edB1E67').trim();
 export const isConfigured = /^0x[a-fA-F0-9]{40}$/.test(CONTRACT_ADDRESS);
 
 export const WYRM_WARD_CHAIN = {

@@ -2,8 +2,8 @@
   "project": "WyrmWard",
   "network": "GenLayer Studio Next",
   "chain_id": 61997,
-  "contract_address": "0xE070F977429707e9c2dd2eb7E4B58404627f3363",
-  "explorer_url": "https://explorer-studio-next.genlayer.com/address/0xE070F977429707e9c2dd2eb7E4B58404627f3363",
+  "contract_address": "0xfd07c5C81125573af97D70fe8A704E9a7edB1E67",
+  "explorer_url": "https://explorer-studio-next.genlayer.com/address/0xfd07c5C81125573af97D70fe8A704E9a7edB1E67",
   "status": "DEPLOYED",
   "frontend_url": null,
   "notes": "Intelligent Contract is live on GenLayer Studio Next (61997)."
