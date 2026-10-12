@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node --test --experimental-strip-types src/state.test.mts",
+    "test": "node --test src/state.test.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
