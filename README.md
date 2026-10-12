@@ -3,11 +3,24 @@
 > **Autonomous Governance Covenant & Revision Sentry on GenLayer**  
 > *Governed by Deterministic Calldata Machine Sentry, Multi-Validator Comparative AI Consensus, and Sovereign Guardian Enactment Gates.*
 
-[![GenLayer Studio Next](https://img.shields.io/badge/GenLayer-Studio_Next_61997-f59e0b?style=for-the-badge&logo=ethereum&logoColor=black)](https://explorer-studio-next.genlayer.com)
-[![GenVM Linter](https://img.shields.io/badge/GenVM_Linter-3_Checks_Passed-10b981?style=for-the-badge)](contracts/wyrm_ward.py)
+[![GenLayer Studio Next](https://img.shields.io/badge/GenLayer-Studio_Next_61997-f59e0b?style=for-the-badge&logo=ethereum&logoColor=black)](https://explorer-studio-next.genlayer.com/address/0xE070F977429707e9c2dd2eb7E4B58404627f3363)
+[![Contract](https://img.shields.io/badge/Contract-0xE070...3363-orange?style=for-the-badge)](https://explorer-studio-next.genlayer.com/address/0xE070F977429707e9c2dd2eb7E4B58404627f3363)
+[![GenVM Linter](https://img.shields.io/badge/GenVM_Linter-Passed-10b981?style=for-the-badge)](contracts/wyrm_ward.py)
 [![Test Suite](https://img.shields.io/badge/Pytest-21_Passed-10b981?style=for-the-badge)](tests/test_wyrm_ward.py)
 [![Frontend](https://img.shields.io/badge/React_19-TypeScript_Vite-6366f1?style=for-the-badge)](frontend/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+
+---
+
+### 🌐 Live On-Chain Deployment
+
+| Property | Value |
+| :--- | :--- |
+| **Network** | GenLayer Studio Next |
+| **Chain ID** | `61997` |
+| **Contract Address** | [`0xE070F977429707e9c2dd2eb7E4B58404627f3363`](https://explorer-studio-next.genlayer.com/address/0xE070F977429707e9c2dd2eb7E4B58404627f3363) |
+| **Block Explorer** | [explorer-studio-next.genlayer.com/address/0xE070F977429707e9c2dd2eb7E4B58404627f3363](https://explorer-studio-next.genlayer.com/address/0xE070F977429707e9c2dd2eb7E4B58404627f3363) |
+| **Status** | Active & Finalized on GenVM |
 
 ---
 
