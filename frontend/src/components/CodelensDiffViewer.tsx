@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionItem } from '../types';
-import { AlertTriangle, CheckCircle, ArrowRight, Layers } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ArrowRight, Layers, ArrowUpRight } from 'lucide-react';
 
 interface Props {
   baselineActions: ActionItem[];
@@ -16,33 +16,33 @@ export const CodelensDiffViewer: React.FC<Props> = ({
   const maxRows = Math.max(baselineActions.length, revisedActions.length);
 
   return (
-    <div className="bg-[#0e1118] border border-white/5 rounded-xl overflow-hidden text-xs font-mono">
+    <div className="bg-[#0b0d14] border border-white/5 rounded-2xl overflow-hidden shadow-lg">
       {/* Header Bar */}
-      <div className="bg-[#141722] px-4 py-2.5 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-slate-300 font-sans font-medium text-xs">
-          <Layers className="w-3.5 h-3.5 text-orange-400" />
-          <span>Executable Calldata Manifest Comparison</span>
+      <div className="bg-[#10131d] px-5 py-3.5 border-b border-white/5 flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2.5 text-white font-medium text-xs">
+          <Layers className="w-4 h-4 text-orange-400" />
+          <span>Deterministic Manifest Equivalence Engine</span>
         </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {divergenceFlags.length === 0 ? (
-            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" /> Zero Calldata Drift
+            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-medium flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5" /> Zero Calldata Drift
             </span>
           ) : (
             divergenceFlags.map((flag, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] flex items-center gap-1 font-semibold"
+                className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm"
               >
-                <AlertTriangle className="w-2.5 h-2.5" /> {flag}
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> {flag}
               </span>
             ))
           )}
         </div>
       </div>
 
-      {/* Action Table */}
-      <div className="overflow-x-auto p-4 space-y-3">
+      {/* Comparison Rows */}
+      <div className="p-5 space-y-4">
         {Array.from({ length: maxRows }).map((_, idx) => {
           const base = baselineActions[idx];
           const rev = revisedActions[idx];
@@ -55,61 +55,134 @@ export const CodelensDiffViewer: React.FC<Props> = ({
           return (
             <div
               key={idx}
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 rounded-lg bg-[#12151f] border border-white/5"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-[#0f121c] border border-white/5"
             >
               {/* Baseline Side */}
-              <div className="space-y-1">
-                <div className="text-[10px] font-sans text-slate-400 uppercase tracking-wider font-semibold">
-                  Epoch Active Canon (Action #{idx + 1})
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-sans">
+                    Current Active Canon (Action #{idx + 1})
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">
+                    Baseline
+                  </span>
                 </div>
+
                 {base ? (
-                  <div className="space-y-1 text-slate-300">
-                    <div className="truncate">
-                      <span className="text-slate-500">Target:</span> {base.target}
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className="p-2.5 rounded-lg bg-[#141724] border border-white/5">
+                      <div className="text-[10px] text-slate-500 uppercase font-sans">Target Contract</div>
+                      <div className="text-slate-200 truncate mt-0.5" title={base.target}>{base.target}</div>
                     </div>
-                    <div>
-                      <span className="text-slate-500">Selector:</span> {base.selector}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2.5 rounded-lg bg-[#141724] border border-white/5">
+                        <div className="text-[10px] text-slate-500 uppercase font-sans">Selector</div>
+                        <div className="text-slate-200 mt-0.5">{base.selector}</div>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-[#141724] border border-white/5">
+                        <div className="text-[10px] text-slate-500 uppercase font-sans">Spending Limit</div>
+                        <div className="text-emerald-400 font-bold mt-0.5">
+                          {base.amount.toLocaleString()} DAI
+                        </div>
+                      </div>
                     </div>
-                    <div className="truncate">
-                      <span className="text-slate-500">Recipient:</span> {base.recipient}
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Amount / Value:</span>{' '}
-                      <span className="text-amber-400">{base.amount.toLocaleString()} units</span>{' '}
-                      ({base.value} wei)
+                    <div className="p-2.5 rounded-lg bg-[#141724] border border-white/5">
+                      <div className="text-[10px] text-slate-500 uppercase font-sans">Beneficiary Recipient</div>
+                      <div className="text-slate-200 truncate mt-0.5" title={base.recipient}>{base.recipient}</div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-slate-500 italic">None (Action added in revision)</div>
+                  <div className="p-6 rounded-lg bg-[#141724]/50 border border-dashed border-white/10 text-slate-500 text-center italic text-xs">
+                    Operation added in proposed amendment
+                  </div>
                 )}
               </div>
 
               {/* Revised Side */}
-              <div className="space-y-1 border-t md:border-t-0 md:border-l md:pl-3 border-white/5 pt-2 md:pt-0">
-                <div className="text-[10px] font-sans text-orange-400 uppercase tracking-wider font-semibold">
-                  Proposed Codicil (Action #{idx + 1})
+              <div className="space-y-2.5 border-t md:border-t-0 md:border-l md:pl-4 border-white/5 pt-3 md:pt-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-orange-400 uppercase tracking-wider font-sans">
+                    Proposed Amendment (Action #{idx + 1})
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-mono">
+                    Revision
+                  </span>
                 </div>
+
                 {rev ? (
-                  <div className="space-y-1 text-slate-300">
-                    <div className={`truncate ${isTargetMutated ? 'text-rose-400 font-bold bg-rose-950/20 px-1 rounded' : ''}`}>
-                      <span className="text-slate-500">Target:</span> {rev.target}
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className={`p-2.5 rounded-lg border transition-all ${
+                      isTargetMutated
+                        ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
+                        : 'bg-[#141724] border-white/5 text-slate-200'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-500 uppercase font-sans">Target Contract</span>
+                        {isTargetMutated && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">
+                            MUTATED
+                          </span>
+                        )}
+                      </div>
+                      <div className="truncate mt-0.5" title={rev.target}>{rev.target}</div>
                     </div>
-                    <div className={isSelectorMutated ? 'text-rose-400 font-bold bg-rose-950/20 px-1 rounded' : ''}>
-                      <span className="text-slate-500">Selector:</span> {rev.selector}
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className={`p-2.5 rounded-lg border transition-all ${
+                        isSelectorMutated
+                          ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
+                          : 'bg-[#141724] border-white/5 text-slate-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-slate-500 uppercase font-sans">Selector</span>
+                          {isSelectorMutated && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">
+                              CHANGED
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5">{rev.selector}</div>
+                      </div>
+
+                      <div className={`p-2.5 rounded-lg border transition-all ${
+                        isAmountMutated
+                          ? 'bg-amber-950/20 border-amber-500/40 text-amber-300'
+                          : 'bg-[#141724] border-white/5 text-slate-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-slate-500 uppercase font-sans">Spending Limit</span>
+                          {isAmountMutated && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">
+                              DELTA
+                            </span>
+                          )}
+                        </div>
+                        <div className={`font-bold mt-0.5 ${isAmountMutated ? 'text-amber-400' : 'text-emerald-400'}`}>
+                          {rev.amount.toLocaleString()} DAI
+                        </div>
+                      </div>
                     </div>
-                    <div className={`truncate ${isRecipientMutated ? 'text-rose-400 font-bold bg-rose-950/20 px-1 rounded' : ''}`}>
-                      <span className="text-slate-500">Recipient:</span> {rev.recipient}
-                    </div>
-                    <div className={isAmountMutated ? 'text-rose-400 font-bold bg-rose-950/20 px-1 rounded' : ''}>
-                      <span className="text-slate-500">Amount / Value:</span>{' '}
-                      <span className={isAmountMutated ? 'text-rose-400 font-bold' : 'text-amber-400'}>
-                        {rev.amount.toLocaleString()} units
-                      </span>{' '}
-                      ({rev.value} wei)
+
+                    <div className={`p-2.5 rounded-lg border transition-all ${
+                      isRecipientMutated
+                        ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
+                        : 'bg-[#141724] border-white/5 text-slate-200'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-500 uppercase font-sans">Beneficiary Recipient</span>
+                        {isRecipientMutated && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">
+                            MUTATED
+                          </span>
+                        )}
+                      </div>
+                      <div className="truncate mt-0.5" title={rev.recipient}>{rev.recipient}</div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-rose-400 italic">Action removed in revision</div>
+                  <div className="p-6 rounded-lg bg-rose-950/10 border border-dashed border-rose-500/20 text-rose-400 text-center italic text-xs">
+                    Operation removed in proposed amendment
+                  </div>
                 )}
               </div>
             </div>

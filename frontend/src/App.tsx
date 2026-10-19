@@ -23,8 +23,10 @@ import {
   History,
   ShieldCheck,
   Terminal,
-  HelpCircle,
   Zap,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   CovenantRecord,
@@ -42,10 +44,11 @@ import {
 } from './genlayer';
 import { DragonFlowchart } from './components/DragonFlowchart';
 import { CodelensDiffViewer } from './components/CodelensDiffViewer';
+import { ActionManifestCard } from './components/ActionManifestCard';
 import { MockScenarios, ScenarioPreset } from './components/MockScenarios';
 import { getCodicilStatusTone, calculateRiskCategory } from './helpers';
 
-// Default realistic fallback records (always populated from first render)
+// Default authentic baseline state
 export const DEFAULT_MOCK_COVENANT: CovenantRecord = {
   covenant_id: 1,
   guardian: '0xd49fe14b47167ff1a0fd4111474d7ef9f3ebbf4d',
@@ -149,6 +152,7 @@ export const App: React.FC = () => {
   const [connecting, setConnecting] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [copiedContract, setCopiedContract] = useState<boolean>(false);
+  const [copiedHash, setCopiedHash] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'info' | 'success' | 'error' } | null>(null);
 
   // Protocol state initialized with rich defaults
@@ -206,19 +210,19 @@ export const App: React.FC = () => {
     )
   );
 
-  // Load live protocol state from GenLayer
+  // Refresh live protocol state from GenLayer contract
   const refreshProtocolState = async () => {
     if (!isConfigured) return;
 
     try {
       setLoading(true);
       const tel = await readContractState<ProtocolTelemetry>('get_protocol_telemetry');
-      
+
       const covCount = Math.max(Number(tel?.covenants) || 0, 1);
       const codCount = Math.max(Number(tel?.codicils) || 0, 1);
       const verCount = Number(tel?.verdicts) || 0;
 
-      // Parallel batch reading to prevent waterfall latency
+      // Parallel batch reading
       const [covResults, codResults, verResults] = await Promise.all([
         Promise.all(
           Array.from({ length: covCount }, (_, i) =>
@@ -241,13 +245,12 @@ export const App: React.FC = () => {
       const validCods = codResults.filter(Boolean) as CodicilRecord[];
       const validVers = verResults.filter(Boolean) as VerdictRecord[];
 
-      // Atomic state update: never leaves UI in half-loaded state
+      // Atomic commit
       if (validCovs.length > 0) setCovenants(validCovs);
       if (validCods.length > 0) setCodicils(validCods);
       if (validVers.length > 0) {
         setVerdicts(validVers);
       } else {
-        // Keep default mock verdict if no verdicts finalized on chain yet
         setVerdicts([DEFAULT_MOCK_VERDICT]);
       }
 
@@ -258,7 +261,6 @@ export const App: React.FC = () => {
       });
     } catch (err: any) {
       console.warn('GenLayer RPC live sync notice:', err.message);
-      // Fallback seamlessly to rich mock baseline
       setCovenants([DEFAULT_MOCK_COVENANT]);
       setCodicils([DEFAULT_MOCK_CODICIL_1, DEFAULT_MOCK_CODICIL_2]);
       setVerdicts([DEFAULT_MOCK_VERDICT]);
@@ -276,6 +278,12 @@ export const App: React.FC = () => {
     navigator.clipboard.writeText(CONTRACT_ADDRESS);
     setCopiedContract(true);
     setTimeout(() => setCopiedContract(false), 2000);
+  };
+
+  const handleCopyHash = (hash: string) => {
+    navigator.clipboard.writeText(hash);
+    setCopiedHash(true);
+    setTimeout(() => setCopiedHash(false), 2000);
   };
 
   const handleConnectWallet = async () => {
@@ -433,67 +441,73 @@ export const App: React.FC = () => {
     verdicts.find((v) => Number(v.codicil_id) === Number(reviewCodicil?.codicil_id)) ||
     (reviewCodicil.codicil_id === 2 ? DEFAULT_MOCK_VERDICT : undefined);
 
+  // Formatted address helper
+  const truncateAddr = (addr: string) => {
+    if (!addr || addr.length < 10) return addr;
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#07080c] text-slate-200 selection:bg-orange-500/30 selection:text-orange-200 relative overflow-x-hidden">
-      {/* Ambient background atmosphere */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,100,61,0.07),rgba(255,255,255,0))] z-0" />
+    <div className="min-h-screen flex flex-col justify-between bg-[#07090e] text-slate-200 selection:bg-orange-500/30 selection:text-orange-200 relative overflow-x-hidden">
+      {/* Subtle ambient lighting */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_90%_70%_at_50%_-15%,rgba(255,100,61,0.08),rgba(255,255,255,0))] z-0" />
 
       <div className="relative z-10 flex flex-col min-h-screen justify-between">
         {/* Top Header Command Bar */}
-        <header className="border-b border-white/5 bg-[#0e1118]/85 backdrop-blur-xl sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <header className="border-b border-white/5 bg-[#0b0e17]/85 backdrop-blur-xl sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
             {/* Logo & Brand Identity */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 via-amber-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-950/30 ring-1 ring-orange-500/30">
                 <span className="text-xl select-none">🐉</span>
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="font-bold text-lg text-white tracking-wide font-sans">WyrmWard</h1>
+                  <h1 className="font-bold text-lg text-white tracking-tight font-sans">WyrmWard</h1>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 font-mono font-semibold">
                     v1.0 GenVM
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">Autonomous Governance Covenant & Revision Sentry</p>
+                <p className="text-xs text-slate-400">Autonomous Governance Covenant & Revision Sentry</p>
               </div>
             </div>
 
             {/* Right Status Controls */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-3">
               {/* Network Pill */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141722] border border-white/5 text-xs">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#121622] border border-white/5 text-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span className="text-slate-300 font-mono">Studio Next (61997)</span>
               </div>
 
               {/* Contract Pill with Copy & Explorer */}
               {isConfigured && (
-                <div className="flex items-center bg-[#141722] border border-white/5 rounded-lg text-xs font-mono text-orange-300 overflow-hidden">
+                <div className="flex items-center bg-[#121622] border border-white/5 rounded-lg text-xs font-mono text-orange-300 overflow-hidden">
                   <a
                     href={`https://explorer-studio-next.genlayer.com/address/${CONTRACT_ADDRESS}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-2.5 py-1.5 hover:text-orange-200 hover:bg-white/5 transition-all flex items-center gap-1.5"
+                    className="px-3 py-1.5 hover:text-orange-200 hover:bg-white/5 transition-all flex items-center gap-1.5"
                     title="View contract on GenLayer Explorer"
                   >
-                    <span>{CONTRACT_ADDRESS.slice(0, 6)}...{CONTRACT_ADDRESS.slice(-4)}</span>
-                    <ExternalLink className="w-3 h-3 text-slate-400" />
+                    <span>{truncateAddr(CONTRACT_ADDRESS)}</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                   </a>
                   <button
                     onClick={handleCopyContract}
-                    className="p-1.5 border-l border-white/5 hover:bg-white/5 text-slate-400 hover:text-white transition-all"
+                    className="p-1.5 border-l border-white/5 hover:bg-white/5 text-slate-400 hover:text-white transition-all cursor-pointer"
                     title="Copy contract address"
                   >
-                    {copiedContract ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    {copiedContract ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               )}
 
               {/* Wallet Pill / Connect */}
               {account ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/30 text-xs text-orange-300 font-mono">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/30 text-xs text-orange-300 font-mono font-medium">
                   <Wallet className="w-3.5 h-3.5" />
-                  <span>{account.slice(0, 6)}...{account.slice(-4)}</span>
+                  <span>{truncateAddr(account)}</span>
                 </div>
               ) : (
                 <button
@@ -510,7 +524,7 @@ export const App: React.FC = () => {
               <button
                 onClick={refreshProtocolState}
                 disabled={loading}
-                className="p-2 rounded-lg bg-[#141722] border border-white/5 hover:border-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
+                className="p-2 rounded-lg bg-[#121622] border border-white/5 hover:border-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
                 title="Refresh on-chain state"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-orange-400' : ''}`} />
@@ -520,55 +534,52 @@ export const App: React.FC = () => {
         </header>
 
         {/* Executive KPI Metric Banner */}
-        <section className="border-b border-white/5 bg-[#0a0c12]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-white/5">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0">
-                <Shield className="w-4 h-4" />
+        <section className="border-b border-white/5 bg-[#0a0c13]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-3.5 rounded-xl bg-[#0f121b] border border-white/5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0">
+                <Shield className="w-4.5 h-4.5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] text-slate-400 font-medium">Sealed Covenants</div>
-                <div className="text-sm font-bold text-white font-mono flex items-center gap-1.5">
-                  <span>{telemetry.covenants}</span>
-                  <span className="text-[10px] font-normal text-emerald-400">· Active</span>
+                <div className="text-xs text-slate-400">Canonical Mandates</div>
+                <div className="text-base font-bold text-white font-mono mt-0.5">
+                  {telemetry.covenants} <span className="text-xs font-normal text-emerald-400">Active</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-white/5">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
-                <FileText className="w-4 h-4" />
+            <div className="p-3.5 rounded-xl bg-[#0f121b] border border-white/5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                <FileText className="w-4.5 h-4.5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] text-slate-400 font-medium">Revision Queue</div>
-                <div className="text-sm font-bold text-orange-300 font-mono flex items-center gap-1.5">
-                  <span>{telemetry.codicils} Codicils</span>
-                  <span className="text-[10px] font-normal text-slate-400">· Logged</span>
+                <div className="text-xs text-slate-400">Revision Pipeline</div>
+                <div className="text-base font-bold text-orange-300 font-mono mt-0.5">
+                  {telemetry.codicils} <span className="text-xs font-normal text-slate-400">Codicils</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-white/5">
-              <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
-                <Scale className="w-4 h-4" />
+            <div className="p-3.5 rounded-xl bg-[#0f121b] border border-white/5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
+                <Scale className="w-4.5 h-4.5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] text-slate-400 font-medium">Council Consensus</div>
-                <div className="text-sm font-bold text-amber-300 font-mono flex items-center gap-1.5">
-                  <span>{telemetry.verdicts} Verdicts</span>
-                  <span className="text-[10px] font-normal text-emerald-400">· Multi-AI</span>
+                <div className="text-xs text-slate-400">Council Consensus</div>
+                <div className="text-base font-bold text-amber-300 font-mono mt-0.5">
+                  {telemetry.verdicts} <span className="text-xs font-normal text-emerald-400">Verdicts</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-white/5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-                <Lock className="w-4 h-4" />
+            <div className="p-3.5 rounded-xl bg-[#0f121b] border border-white/5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                <Lock className="w-4.5 h-4.5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] text-slate-400 font-medium">Enactment Gate</div>
-                <div className="text-sm font-bold text-emerald-300 font-mono flex items-center gap-1.5">
-                  <span>Guardian Sovereign</span>
+                <div className="text-xs text-slate-400">Sovereign Gate</div>
+                <div className="text-base font-bold text-emerald-300 font-mono mt-0.5">
+                  Guardian <span className="text-xs font-normal text-slate-400">Non-Auto</span>
                 </div>
               </div>
             </div>
@@ -587,7 +598,7 @@ export const App: React.FC = () => {
                   : 'bg-orange-500/10 border-orange-500/30 text-orange-300'
               }`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {statusMessage.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
                 {statusMessage.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />}
                 {statusMessage.type === 'info' && <Sparkles className="w-4 h-4 text-orange-400 shrink-0" />}
@@ -603,16 +614,16 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Main Content Area: fills entire vertical view */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          {/* Navigation Tabs */}
+        {/* Main Content Area */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Segmented Tab Navigation */}
           <div className="flex items-center gap-2 border-b border-white/5 pb-3 overflow-x-auto scrollbar-none">
             {[
-              { id: 'covenants', label: 'Active Covenants (Canon Explorer)', icon: Shield },
-              { id: 'review', label: 'Dragon Council Chamber (Consensus)', icon: Scale },
-              { id: 'propose', label: 'Draft Codicil (Propose)', icon: FileText },
-              { id: 'create', label: 'Seal New Covenant', icon: PlusCircle },
-              { id: 'architecture', label: 'Security Radar & Architecture', icon: Flame },
+              { id: 'covenants', label: 'Canonical Mandates', icon: Shield },
+              { id: 'review', label: 'Dragon Council Chamber', icon: Scale, badge: '1 Pending' },
+              { id: 'propose', label: 'Proposal Studio', icon: FileText },
+              { id: 'create', label: 'Genesis Covenant', icon: PlusCircle },
+              { id: 'architecture', label: 'Security Architecture', icon: Flame },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -622,265 +633,210 @@ export const App: React.FC = () => {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 cursor-pointer ${
                     isActive
-                      ? 'bg-gradient-to-r from-orange-600/20 to-amber-600/20 text-orange-400 border border-orange-500/30 shadow-md shadow-orange-950/20 ring-1 ring-orange-500/20'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#141722] border border-transparent'
+                      ? 'bg-gradient-to-r from-orange-600/20 to-amber-600/20 text-orange-400 border border-orange-500/30 shadow-md shadow-orange-950/20 ring-1 ring-orange-500/20 font-semibold'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#121622] border border-transparent'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
+                  {tab.badge && (
+                    <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-mono">
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          {/* TAB 1: ACTIVE COVENANTS (CANON EXPLORER) */}
+          {/* TAB 1: CANONICAL MANDATES (CANON EXPLORER) */}
           {activeTab === 'covenants' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                {/* Left Sidebar: Covenant Roster & Governance History */}
-                <div className="space-y-6">
-                  {/* Canonical Mandates List */}
-                  <div className="bg-[#10131a] border border-white/5 rounded-2xl p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-orange-400" />
-                        Canonical Mandates
-                      </h2>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 font-semibold">
-                        {covenants.length} REGISTERED
+            <div className="space-y-8">
+              {/* Covenant Executive Header Card */}
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#0c0f18] border border-white/5 shadow-xl relative overflow-hidden">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/5">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="px-2.5 py-1 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20 text-xs font-mono font-semibold uppercase">
+                        Domain: {selectedCovenant.domain}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-semibold">
+                        CANON_ACTIVE
+                      </span>
+                      <span className="px-2.5 py-1 rounded-md bg-white/5 text-slate-300 border border-white/5 text-xs font-mono">
+                        Epoch #{selectedCovenant.current_epoch}
                       </span>
                     </div>
-
-                    <div className="space-y-3">
-                      {covenants.map((cov) => {
-                        const isSelected = Number(cov.covenant_id) === Number(selectedCovenant.covenant_id);
-                        return (
-                          <div
-                            key={cov.covenant_id}
-                            onClick={() => setSelectedCovenantId(Number(cov.covenant_id))}
-                            className={`p-4 rounded-xl cursor-pointer border transition-all ${
-                              isSelected
-                                ? 'bg-[#151926] border-orange-500/40 shadow-lg shadow-orange-950/20 ring-1 ring-orange-500/30'
-                                : 'bg-[#12151e] border-white/5 hover:border-white/10 opacity-80 hover:opacity-100'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 font-semibold">
-                                COVENANT #{cov.covenant_id}
-                              </span>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                                Epoch {cov.current_epoch}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-sm text-slate-100 mb-1.5">{cov.name}</h3>
-                            <div className="text-[11px] text-slate-400 font-mono truncate">
-                              Guardian: {cov.guardian}
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                      {selectedCovenant.name}
+                    </h2>
+                    <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                      <span>Guardian Authority:</span>
+                      <span className="text-slate-200 font-semibold">{selectedCovenant.guardian}</span>
                     </div>
                   </div>
 
-                  {/* Epoch Evolution Timeline */}
-                  <div className="bg-[#10131a] border border-white/5 rounded-2xl p-5 space-y-4">
-                    <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                      <History className="w-4 h-4 text-amber-400" />
-                      Epoch Lineage History
-                    </h3>
-
-                    <div className="space-y-3 text-xs">
-                      <div className="p-3 rounded-xl bg-[#141722] border border-emerald-500/30 relative pl-4">
-                        <div className="absolute left-1.5 top-3.5 w-1.5 h-1.5 rounded-full bg-emerald-400 ring-4 ring-emerald-500/20"></div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-mono font-bold text-emerald-400">Epoch #1 (Active Canon)</span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">SEALED</span>
-                        </div>
-                        <p className="text-slate-300 text-[11px] leading-relaxed">
-                          Initial sealed baseline with 50,000 DAI allocation limit for formal verification audits.
-                        </p>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-[#141722] border border-amber-500/30 relative pl-4">
-                        <div className="absolute left-1.5 top-3.5 w-1.5 h-1.5 rounded-full bg-amber-400 ring-4 ring-amber-500/20 animate-pulse"></div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-mono font-bold text-amber-400">Epoch #2 (Pending Revision)</span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-mono">IN REVIEW</span>
-                        </div>
-                        <p className="text-slate-300 text-[11px] leading-relaxed">
-                          Codicil #2 proposes +25,000 DAI capital expansion for cross-chain L2 integration security.
-                        </p>
-                        <button
-                          onClick={() => {
-                            setSelectedCodicilId(2);
-                            setActiveTab('review');
-                          }}
-                          className="mt-2 text-[10px] text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>Inspect in Council Chamber</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Governance Navigation */}
-                  <div className="bg-[#10131a] border border-white/5 rounded-2xl p-5 space-y-3">
-                    <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-orange-400" />
-                      Quick Sentry Actions
-                    </h3>
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => setActiveTab('propose')}
-                        className="w-full p-2.5 rounded-xl bg-[#141722] hover:bg-[#1a1f2e] border border-white/5 text-left text-xs text-slate-200 flex items-center justify-between transition-all cursor-pointer"
-                      >
-                        <span className="font-medium">Draft Amendment Codicil</span>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('review')}
-                        className="w-full p-2.5 rounded-xl bg-[#141722] hover:bg-[#1a1f2e] border border-white/5 text-left text-xs text-slate-200 flex items-center justify-between transition-all cursor-pointer"
-                      >
-                        <span className="font-medium">Open Dragon Council Chamber</span>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('architecture')}
-                        className="w-full p-2.5 rounded-xl bg-[#141722] hover:bg-[#1a1f2e] border border-white/5 text-left text-xs text-slate-200 flex items-center justify-between transition-all cursor-pointer"
-                      >
-                        <span className="font-medium">Inspect 3-Gate Sentry Flow</span>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </button>
-                    </div>
+                  {/* Top Action CTAs */}
+                  <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                    <button
+                      onClick={() => {
+                        setSelectedCodicilId(2);
+                        setActiveTab('review');
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-[#141824] hover:bg-[#1a2030] text-slate-200 border border-white/10 font-medium text-xs flex items-center gap-2 transition-all cursor-pointer"
+                    >
+                      <Scale className="w-4 h-4 text-amber-400" />
+                      <span>Review Council Queue</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('propose')}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-orange-950/20 transition-all cursor-pointer"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Draft Revision Codicil</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Right Area: Deep Canonical Mandate Dossier */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="bg-[#10131a] border border-white/5 rounded-2xl p-6 relative overflow-hidden space-y-6">
-                    {/* Header Banner */}
-                    <div className="flex items-start justify-between flex-wrap gap-4 border-b border-white/5 pb-5">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-xs font-mono text-orange-400 uppercase tracking-wider font-semibold">
-                            DOMAIN: {selectedCovenant.domain}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-semibold">
-                            CANON_ACTIVE
-                          </span>
-                        </div>
-                        <h2 className="text-2xl font-bold text-white tracking-tight">{selectedCovenant.name}</h2>
-                        <div className="text-xs text-slate-400 font-mono mt-1">
-                          Covenant UID: #{selectedCovenant.covenant_id} · Sealed on GenLayer Studio Next
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-xs text-slate-400">Current Enacted Canon</div>
-                        <div className="text-lg font-mono font-bold text-orange-400">
-                          Epoch #{selectedCovenant.current_epoch}
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-mono">
-                          Active Codicil #{selectedCovenant.active_codicil_id}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Canonical Mandate Prose */}
-                    <div className="bg-[#141824] rounded-2xl p-5 border border-white/5 shadow-inner space-y-3">
-                      <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-between flex-wrap gap-2">
-                        <span className="flex items-center gap-2">
+                {/* 2-Column Balanced Core Dossier */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
+                  {/* Left Column: Natural-Language Constitution & Invariants */}
+                  <div className="lg:col-span-6 space-y-6">
+                    {/* Natural-Language Constitution */}
+                    <div className="p-6 rounded-2xl bg-[#111420] border border-white/5 space-y-4 shadow-sm">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2 font-sans">
                           <FileText className="w-4 h-4 text-orange-400" />
-                          Canonical Mandate Natural-Language Constitution
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 truncate max-w-xs">
-                          {activeCanonCodicil.prose_hash || 'sha256:c3eb82aa...'}
-                        </span>
+                          <span>Canonical Mandate Prose (Constitution)</span>
+                        </div>
+                        <button
+                          onClick={() => handleCopyHash(activeCanonCodicil.prose_hash)}
+                          className="px-2 py-1 rounded bg-[#171b2b] hover:bg-[#1e2338] text-[11px] font-mono text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Copy prose SHA256 hash"
+                        >
+                          <span>{truncateAddr(activeCanonCodicil.prose_hash)}</span>
+                          {copiedHash ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        </button>
                       </div>
-                      
-                      <div className="p-4 rounded-xl bg-[#0d1017] border border-white/5">
-                        <p className="text-sm text-slate-100 leading-relaxed font-sans italic">
+
+                      <div className="p-5 rounded-xl bg-[#0a0c14] border border-white/5 relative">
+                        <p className="text-sm text-slate-200 leading-relaxed font-sans italic">
                           "{activeCanonCodicil.covenant_prose}"
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                      <div className="text-xs text-slate-400 flex items-center justify-between pt-1">
                         <span>Disclosure baseline: {activeCanonCodicil.changelog_disclosure}</span>
-                        <span className="font-mono text-emerald-400">Deterministic Invariant Enforced</span>
+                        <span className="text-emerald-400 font-mono text-[11px]">Sealed Epoch 1</span>
                       </div>
                     </div>
 
-                    {/* Active Calldata Actions Manifest */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-orange-400" />
-                          Active Executable Actions Manifest (GenVM)
+                    {/* Active Cryptographic Invariants */}
+                    <div className="p-6 rounded-2xl bg-[#111420] border border-white/5 space-y-4">
+                      <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2 font-sans">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <span>Active GenVM Security Invariants</span>
+                      </div>
+
+                      <div className="space-y-3 text-xs">
+                        <div className="p-3.5 rounded-xl bg-[#0a0c14] border border-white/5 flex items-start gap-3">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <div className="font-semibold text-white">Deterministic Calldata Verification</div>
+                            <div className="text-slate-400 text-[11px] mt-0.5">
+                              Zero silent mutations allowed. Calldata hashes are computed deterministically prior to LLM consensus.
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-[10px] font-mono text-slate-400">
+
+                        <div className="p-3.5 rounded-xl bg-[#0a0c14] border border-white/5 flex items-start gap-3">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <div className="font-semibold text-white">Multi-Validator Equivalence Consensus</div>
+                            <div className="text-slate-400 text-[11px] mt-0.5">
+                              Independent validators judge disclosure transparency against machine execution parameters.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-[#0a0c14] border border-white/5 flex items-start gap-3">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <div className="font-semibold text-white">Non-Autonomous Sovereign Gate</div>
+                            <div className="text-slate-400 text-[11px] mt-0.5">
+                              AI validators hold advisory and veto powers only. Only the authenticated guardian key commits active canon.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Executable Calldata Manifest & Lineage */}
+                  <div className="lg:col-span-6 space-y-6">
+                    {/* Authorized Actions Manifest */}
+                    <div className="p-6 rounded-2xl bg-[#111420] border border-white/5 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2 font-sans">
+                          <Layers className="w-4 h-4 text-orange-400" />
+                          <span>Authorized Executable Actions Manifest</span>
+                        </div>
+                        <span className="text-[11px] font-mono text-slate-400">
                           {activeCanonCodicil.actions?.length || 1} Operation Enacted
                         </span>
                       </div>
 
-                      <CodelensDiffViewer
-                        baselineActions={activeCanonCodicil.actions || []}
-                        revisedActions={activeCanonCodicil.actions || []}
-                        divergenceFlags={[]}
-                      />
+                      <ActionManifestCard actions={activeCanonCodicil.actions || []} />
                     </div>
 
-                    {/* Cryptographic Security Invariants */}
-                    <div className="p-5 rounded-xl bg-gradient-to-r from-orange-950/20 via-[#141722] to-amber-950/20 border border-orange-500/20 space-y-3">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-orange-400" />
-                        GenVM Mathematical Invariants Active
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div className="p-3 rounded-lg bg-[#0e1118] border border-white/5">
-                          <div className="font-semibold text-slate-200 mb-1">Deterministic Diff</div>
-                          <p className="text-[11px] text-slate-400">
-                            Zero silent parameters allowed. All targets and spending limits are hashed via sha256.
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-lg bg-[#0e1118] border border-white/5">
-                          <div className="font-semibold text-slate-200 mb-1">Equivalence Consensus</div>
-                          <p className="text-[11px] text-slate-400">
-                            Independent validators cross-examine natural language against calldata operations.
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-lg bg-[#0e1118] border border-white/5">
-                          <div className="font-semibold text-slate-200 mb-1">Guardian Gate</div>
-                          <p className="text-[11px] text-slate-400">
-                            AI validators can never execute autonomous transfers. Human guardian signature mandatory.
-                          </p>
-                        </div>
+                    {/* Epoch Evolution Lineage */}
+                    <div className="p-6 rounded-2xl bg-[#111420] border border-white/5 space-y-4">
+                      <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2 font-sans">
+                        <History className="w-4 h-4 text-amber-400" />
+                        <span>Governance Epoch Lineage</span>
                       </div>
-                    </div>
 
-                    {/* Bottom Action Footer */}
-                    <div className="flex items-center justify-between pt-5 border-t border-white/5 text-xs text-slate-400 flex-wrap gap-4">
-                      <div>
-                        Guardian Authority:{' '}
-                        <span className="font-mono text-slate-300 font-semibold">{selectedCovenant.guardian}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => {
-                            setSelectedCodicilId(2);
-                            setActiveTab('review');
-                          }}
-                          className="px-3.5 py-2 rounded-xl bg-[#141722] hover:bg-[#1a1f2e] text-slate-300 border border-white/10 font-medium text-xs transition-all cursor-pointer"
-                        >
-                          Review Pending Codicil
-                        </button>
-                        <button
-                          onClick={() => setActiveTab('propose')}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/20 transition-all cursor-pointer"
-                        >
-                          <span>Draft Revision Codicil</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                      <div className="space-y-3">
+                        <div className="p-4 rounded-xl bg-[#0a0c14] border border-emerald-500/30 flex items-start justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                              <span className="text-xs font-bold text-white font-mono">Epoch #1: Baseline Sealed</span>
+                              <span className="text-[10px] px-2 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-mono">
+                                ACTIVE CANON
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                              Established 50,000 DAI allocation for security audits and cryptographic formal verification.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-[#0a0c14] border border-amber-500/30 flex items-start justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                              <span className="text-xs font-bold text-white font-mono">Epoch #2: Amendment Proposed</span>
+                              <span className="text-[10px] px-2 py-0.2 rounded bg-amber-500/10 text-amber-400 font-mono">
+                                IN REVIEW
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                              Codicil #2 proposes +25,000 DAI expansion for ZK rollup bridge audits.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedCodicilId(2);
+                              setActiveTab('review');
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-medium shrink-0 transition-all cursor-pointer flex items-center gap-1"
+                          >
+                            <span>Inspect</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -891,360 +847,360 @@ export const App: React.FC = () => {
 
           {/* TAB 2: DRAGON COUNCIL REVIEW CHAMBER */}
           {activeTab === 'review' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Scale className="w-5 h-5 text-amber-400" />
-                    Dragon Council Review Chamber
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Comparative multi-validator adjudication of prospective covenant codicils.
+            <div className="space-y-8">
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#0c0f18] border border-white/5 space-y-6 shadow-xl">
+                {/* Header & Codicil Selector */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/5">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2.5">
+                      <Scale className="w-6 h-6 text-amber-400" />
+                      <span>Dragon Council Review Chamber</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Multi-validator comparative consensus: Natural-language disclosure integrity vs executable calldata parameters.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400">Inspecting Proposal:</span>
+                    <select
+                      value={selectedCodicilId}
+                      onChange={(e) => setSelectedCodicilId(Number(e.target.value))}
+                      className="bg-[#141824] border border-white/10 rounded-xl px-4 py-2 text-xs text-white font-mono cursor-pointer"
+                    >
+                      {codicils.map((cod) => (
+                        <option key={cod.codicil_id} value={cod.codicil_id}>
+                          Codicil #{cod.codicil_id} (Target: Epoch #{cod.epoch_number} - {cod.status})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Review Overview Banner */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-xl bg-[#111420] border border-white/5 space-y-1">
+                    <div className="text-xs text-slate-400">Proposal Identity</div>
+                    <div className="text-sm font-bold font-mono text-white">Codicil #{reviewCodicil.codicil_id}</div>
+                    <div className="text-[11px] text-slate-400 truncate font-mono">By: {reviewCodicil.proposer}</div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#111420] border border-white/5 space-y-1">
+                    <div className="text-xs text-slate-400">Enactment Target</div>
+                    <div className="text-sm font-bold font-mono text-orange-400">Epoch #{reviewCodicil.epoch_number}</div>
+                    <div className="text-[11px] text-slate-400 font-mono">Bound to Epoch #{selectedCovenant.current_epoch}</div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#111420] border border-white/5 space-y-1">
+                    <div className="text-xs text-slate-400">Consensus Status</div>
+                    <div className="text-sm font-bold font-mono text-amber-300">{reviewCodicil.status}</div>
+                    <div className="text-[11px] text-emerald-400 font-mono">Pre-Filter Cleared</div>
+                  </div>
+                </div>
+
+                {/* Proposer's Changelog Disclosure Banner */}
+                <div className="p-5 rounded-2xl bg-[#111420] border border-white/5 space-y-2">
+                  <div className="text-xs font-semibold text-orange-400 uppercase tracking-wider">
+                    Author's Transparent Changelog Disclosure
+                  </div>
+                  <p className="text-sm text-slate-200 leading-relaxed font-sans italic">
+                    "{reviewCodicil.changelog_disclosure}"
                   </p>
                 </div>
 
-                {/* Selector for Codicils */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">Inspecting Codicil:</span>
-                  <select
-                    value={selectedCodicilId}
-                    onChange={(e) => setSelectedCodicilId(Number(e.target.value))}
-                    className="bg-[#141722] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-mono cursor-pointer"
-                  >
-                    {codicils.map((cod) => (
-                      <option key={cod.codicil_id} value={cod.codicil_id}>
-                        Codicil #{cod.codicil_id} (Epoch {cod.epoch_number} - {cod.status})
-                      </option>
-                    ))}
-                  </select>
+                {/* Side-by-Side Manifest Diff Engine */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-orange-400" />
+                    <span>Side-by-Side Calldata Manifest Comparison</span>
+                  </h3>
+                  <CodelensDiffViewer
+                    baselineActions={activeCanonCodicil?.actions || []}
+                    revisedActions={reviewCodicil.actions || []}
+                    divergenceFlags={reviewCodicil.divergence_flags || []}
+                  />
                 </div>
-              </div>
 
-              {reviewCodicil && (
-                <div className="space-y-6">
-                  {/* Status Hero Card */}
-                  <div className="bg-[#10131a] border border-white/5 rounded-2xl p-6 space-y-6">
-                    <div className="flex items-start justify-between mb-4 flex-wrap gap-4 border-b border-white/5 pb-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-slate-400">CODICIL #{reviewCodicil.codicil_id}</span>
-                          <span
-                            className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold border ${
-                              getCodicilStatusTone(reviewCodicil.status).tone === 'emerald'
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                : getCodicilStatusTone(reviewCodicil.status).tone === 'amber'
-                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                : getCodicilStatusTone(reviewCodicil.status).tone === 'rose'
-                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                            }`}
-                          >
-                            {reviewCodicil.status}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold text-white mt-1">
-                          Revision Target: Epoch #{reviewCodicil.epoch_number}
-                        </h3>
-                        <div className="text-xs text-slate-400 font-mono mt-0.5">
-                          Proposer: {reviewCodicil.proposer}
-                        </div>
+                {/* Dragon Council AI Adjudication Report */}
+                {reviewVerdict ? (
+                  <div className="p-6 rounded-2xl bg-[#111524] border border-amber-500/30 space-y-5">
+                    <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <Scale className="w-5 h-5 text-amber-400" />
+                        <h4 className="text-base font-bold text-white">Dragon Council Consensus Report</h4>
                       </div>
-
-                      {/* Action Execution Trigger Buttons */}
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => handleAdjudicateCodicil(reviewCodicil.codicil_id)}
-                          disabled={loading}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-semibold shadow-lg shadow-amber-950/20 flex items-center gap-2 cursor-pointer transition-all"
-                        >
-                          <Scale className="w-4 h-4" />
-                          <span>Adjudicate with Council (AI Consensus)</span>
-                        </button>
-
-                        <button
-                          onClick={() => handleCommitCodicil(reviewCodicil.codicil_id)}
-                          disabled={loading}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-950/20 flex items-center gap-2 cursor-pointer transition-all"
-                        >
-                          <Lock className="w-4 h-4" />
-                          <span>Commit Codicil (Guardian Enactment)</span>
-                        </button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">Risk Assessment:</span>
+                        <span className={`font-mono text-sm font-bold ${calculateRiskCategory(reviewVerdict.risk_score).color}`}>
+                          {reviewVerdict.risk_score}/100 ({calculateRiskCategory(reviewVerdict.risk_score).label})
+                        </span>
                       </div>
                     </div>
 
-                    {/* Proposer's Changelog Disclosure Banner */}
-                    <div className="bg-[#141722] rounded-xl p-4 border border-white/5">
-                      <div className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">
-                        Author's Changelog Disclosure
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-3.5 rounded-xl bg-[#0a0d16] border border-white/5">
+                        <div className="text-[11px] text-slate-400 uppercase">Council Verdict</div>
+                        <div className="text-sm font-bold text-amber-300 font-mono mt-0.5">
+                          {reviewVerdict.assessment}
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-200 leading-relaxed font-sans italic">
-                        "{reviewCodicil.changelog_disclosure}"
-                      </p>
+
+                      <div className="p-3.5 rounded-xl bg-[#0a0d16] border border-white/5">
+                        <div className="text-[11px] text-slate-400 uppercase">Disclosure Integrity</div>
+                        <div className="text-sm font-bold text-emerald-400 font-mono mt-0.5">
+                          {reviewVerdict.disclosure_integrity ? 'TRANSPARENT_VERIFIED' : 'DECEPTIVE_OMISSION'}
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-[#0a0d16] border border-white/5">
+                        <div className="text-[11px] text-slate-400 uppercase">Action Diff Present</div>
+                        <div className="text-sm font-bold text-orange-400 font-mono mt-0.5">
+                          {reviewVerdict.action_diff_present ? 'MATERIAL DELTA' : 'IDENTICAL'}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Dragon Council AI Verdict Card */}
-                    {reviewVerdict ? (
-                      <div className="bg-[#121622] rounded-xl p-5 border border-amber-500/30 space-y-4">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-2">
-                            <Scale className="w-4 h-4 text-amber-400" />
-                            <h4 className="text-sm font-bold text-white">Dragon Council Consensus Report</h4>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-400">Risk Score:</span>
-                            <span className={`font-mono text-sm font-bold ${calculateRiskCategory(reviewVerdict.risk_score).color}`}>
-                              {reviewVerdict.risk_score}/100 ({calculateRiskCategory(reviewVerdict.risk_score).label})
+                    <div className="p-4 rounded-xl bg-[#0a0d16] border border-white/5 space-y-1">
+                      <div className="text-[11px] text-slate-400 uppercase font-semibold">Multi-Validator Consensus Synthesis:</div>
+                      <p className="text-xs text-slate-200 leading-relaxed italic">"{reviewVerdict.reason}"</p>
+                    </div>
+
+                    {/* Threat Classifiers */}
+                    {reviewVerdict.threat_tags?.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <span className="text-xs text-slate-400">Threat Classifiers:</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {reviewVerdict.threat_tags.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20 text-xs font-mono"
+                            >
+                              {tag}
                             </span>
-                          </div>
+                          ))}
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className="bg-[#0e111a] p-3 rounded-lg border border-white/5">
-                            <div className="text-[10px] text-slate-500 uppercase font-semibold">Council Decision</div>
-                            <div className="text-xs font-mono font-bold text-amber-300 mt-0.5">
-                              {reviewVerdict.assessment}
-                            </div>
-                          </div>
-                          <div className="bg-[#0e111a] p-3 rounded-lg border border-white/5">
-                            <div className="text-[10px] text-slate-500 uppercase font-semibold">Disclosure Integrity</div>
-                            <div className="text-xs font-mono font-bold text-emerald-400 mt-0.5">
-                              {reviewVerdict.disclosure_integrity ? 'VERIFIED_TRANSPARENT' : 'DECEPTIVE_OMISSION'}
-                            </div>
-                          </div>
-                          <div className="bg-[#0e111a] p-3 rounded-lg border border-white/5">
-                            <div className="text-[10px] text-slate-500 uppercase font-semibold">Action Diff Present</div>
-                            <div className="text-xs font-mono font-bold text-orange-400 mt-0.5">
-                              {reviewVerdict.action_diff_present ? 'YES (MATERIAL DELTA)' : 'NO (IDENTICAL)'}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Reasoning Quote */}
-                        <div className="p-3.5 rounded-lg bg-[#0e111a] border border-white/5">
-                          <div className="text-[10px] text-slate-400 uppercase font-semibold mb-1">Consensus Synthesis:</div>
-                          <p className="text-xs text-slate-300 italic leading-relaxed">"{reviewVerdict.reason}"</p>
-                        </div>
-
-                        {/* Threat Tags */}
-                        {reviewVerdict.threat_tags?.length > 0 && (
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[10px] text-slate-500 uppercase font-semibold">Threat Classifiers:</span>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {reviewVerdict.threat_tags.map((tag, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[10px] font-mono"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="bg-[#141722]/60 rounded-xl p-5 border border-dashed border-white/10 text-center">
-                        <Clock className="w-5 h-5 text-slate-500 mx-auto mb-1" />
-                        <div className="text-xs text-slate-300 font-semibold">Awaiting Dragon Council Adjudication</div>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Click "Adjudicate with Council" to convene multi-validator AI consensus across GenLayer.
-                        </p>
                       </div>
                     )}
 
-                    {/* Calldata Manifest Diff Engine */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-orange-400" />
-                        Deterministic Manifest Diff Engine (Active Baseline vs Proposed Revision)
-                      </h4>
-                      <CodelensDiffViewer
-                        baselineActions={activeCanonCodicil.actions || []}
-                        revisedActions={reviewCodicil.actions || []}
-                        divergenceFlags={reviewCodicil.divergence_flags || []}
-                      />
+                    {/* Action Execution Buttons */}
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5 flex-wrap">
+                      <button
+                        onClick={() => handleAdjudicateCodicil(reviewCodicil.codicil_id)}
+                        disabled={loading}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold text-xs shadow-md shadow-amber-950/20 flex items-center gap-2 cursor-pointer transition-all"
+                      >
+                        <Scale className="w-4 h-4" />
+                        <span>Convene Council (Multi-Validator Consensus)</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleCommitCodicil(reviewCodicil.codicil_id)}
+                        disabled={loading}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs shadow-md shadow-emerald-950/20 flex items-center gap-2 cursor-pointer transition-all"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>The Guardian's Seal: Enact to Active Canon</span>
+                      </button>
                     </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-8 rounded-2xl bg-[#111420] border border-dashed border-white/10 text-center space-y-3">
+                    <Clock className="w-8 h-8 text-slate-500 mx-auto" />
+                    <div className="text-sm font-semibold text-white">Awaiting Dragon Council Adjudication</div>
+                    <p className="text-xs text-slate-400 max-w-md mx-auto">
+                      Click below to convene multi-validator comparative AI consensus across independent GenLayer nodes.
+                    </p>
+                    <button
+                      onClick={() => handleAdjudicateCodicil(reviewCodicil.codicil_id)}
+                      disabled={loading}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold text-xs shadow-md shadow-amber-950/20 inline-flex items-center gap-2 cursor-pointer transition-all"
+                    >
+                      <Scale className="w-4 h-4" />
+                      <span>Convene Council Now</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* TAB 3: DRAFT CODICIL (PROPOSE) */}
+          {/* TAB 3: DRAFT CODICIL (PROPOSAL STUDIO) */}
           {activeTab === 'propose' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="space-y-8">
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#0c0f18] border border-white/5 space-y-8 shadow-xl">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-orange-400" />
-                    Draft Prospective Codicil
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2.5">
+                    <FileText className="w-6 h-6 text-orange-400" />
+                    <span>Governance Amendment Proposal Studio</span>
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Propose an amendment against the active governance canon with cryptographic parent binding.
+                  <p className="text-xs text-slate-400 mt-1">
+                    Draft a proposed amendment against the active governance canon with cryptographic parent epoch binding.
                   </p>
                 </div>
+
+                {/* Simulation Scenarios Presets */}
+                <div className="p-6 rounded-2xl bg-[#111420] border border-white/5">
+                  <MockScenarios onSelect={handleSelectScenario} />
+                </div>
+
+                {/* Proposal Form */}
+                <form onSubmit={handleSubmitCodicil} className="space-y-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      Revised Governance Prose (Natural-Language Constitution)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={proposeRevProse}
+                      onChange={(e) => setProposeRevProse(e.target.value)}
+                      className="w-full bg-[#111420] border border-white/10 rounded-2xl p-4 text-xs text-white font-sans focus:outline-none focus:border-orange-500/50 leading-relaxed"
+                      placeholder="Enter revised mandate prose..."
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      Author's Transparent Changelog Disclosure
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={proposeChangelog}
+                      onChange={(e) => setProposeChangelog(e.target.value)}
+                      className="w-full bg-[#111420] border border-white/10 rounded-2xl p-4 text-xs text-white font-sans focus:outline-none focus:border-orange-500/50 leading-relaxed"
+                      placeholder="Disclose any and all material parameter changes..."
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      Executable Calldata Manifest (JSON Array)
+                    </label>
+                    <textarea
+                      rows={6}
+                      value={proposeManifest}
+                      onChange={(e) => setProposeManifest(e.target.value)}
+                      className="w-full bg-[#111420] border border-white/10 rounded-2xl p-4 text-xs text-amber-300 font-mono focus:outline-none focus:border-orange-500/50 leading-relaxed"
+                      placeholder="[{ target, selector, recipient, asset, value, amount }]"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-white/5 flex-wrap gap-4">
+                    <span className="text-xs text-slate-400 font-mono">
+                      Bound to Parent Epoch #{selectedCovenant.current_epoch} ({truncateAddr(activeCanonCodicil.prose_hash)})
+                    </span>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-xs shadow-lg shadow-orange-950/20 flex items-center gap-2 cursor-pointer transition-all"
+                    >
+                      <Flame className="w-4 h-4" />
+                      <span>Submit to Dragon's Breath Pre-Filter</span>
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              {/* Scenario Presets Bar */}
-              <div className="bg-[#10131a] border border-white/5 rounded-2xl p-5">
-                <MockScenarios onSelect={handleSelectScenario} />
-              </div>
-
-              {/* Proposal Form */}
-              <form onSubmit={handleSubmitCodicil} className="bg-[#10131a] border border-white/5 rounded-2xl p-6 space-y-5">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Revised Covenant Prose (Constitution)
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={proposeRevProse}
-                    onChange={(e) => setProposeRevProse(e.target.value)}
-                    className="w-full bg-[#141722] border border-white/10 rounded-xl p-3 text-xs text-white font-sans focus:outline-none focus:border-orange-500/50"
-                    placeholder="Enter revised natural-language mandate..."
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Author's Transparent Changelog Disclosure
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={proposeChangelog}
-                    onChange={(e) => setProposeChangelog(e.target.value)}
-                    className="w-full bg-[#141722] border border-white/10 rounded-xl p-3 text-xs text-white font-sans focus:outline-none focus:border-orange-500/50"
-                    placeholder="Disclose any and all material parameter changes..."
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Executable Calldata Action Manifest (JSON Array)
-                  </label>
-                  <textarea
-                    rows={6}
-                    value={proposeManifest}
-                    onChange={(e) => setProposeManifest(e.target.value)}
-                    className="w-full bg-[#141722] border border-white/10 rounded-xl p-3 text-xs text-amber-300 font-mono focus:outline-none focus:border-orange-500/50"
-                    placeholder="[{ target, selector, recipient, asset, value, amount }]"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                  <span className="text-xs text-slate-400">
-                    Parent epoch bound to: Epoch #{selectedCovenant.current_epoch}
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-xs shadow-lg shadow-orange-950/20 flex items-center gap-2 cursor-pointer transition-all"
-                  >
-                    <Flame className="w-4 h-4" />
-                    <span>Submit to Dragon's Breath Pre-Filter</span>
-                  </button>
-                </div>
-              </form>
             </div>
           )}
 
           {/* TAB 4: SEAL NEW COVENANT */}
           {activeTab === 'create' && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <PlusCircle className="w-5 h-5 text-orange-400" />
-                  Seal New Governance Covenant Baseline
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Register a brand new governance domain with Genesis Epoch #1 on GenLayer.
-                </p>
+            <div className="space-y-8">
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#0c0f18] border border-white/5 space-y-8 shadow-xl">
+                <div>
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2.5">
+                    <PlusCircle className="w-6 h-6 text-orange-400" />
+                    <span>Seal Genesis Governance Covenant</span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Register a brand-new immutable governance domain with Genesis Epoch #1 on GenLayer.
+                  </p>
+                </div>
+
+                <form onSubmit={handleSealCovenant} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                        Covenant Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newCovenantName}
+                        onChange={(e) => setNewCovenantName(e.target.value)}
+                        className="w-full bg-[#111420] border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-orange-500/50"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                        Governance Domain
+                      </label>
+                      <input
+                        type="text"
+                        value={newCovenantDomain}
+                        onChange={(e) => setNewCovenantDomain(e.target.value)}
+                        className="w-full bg-[#111420] border border-white/10 rounded-2xl px-4 py-3 text-xs text-white font-mono focus:outline-none focus:border-orange-500/50"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      Baseline Mandate Prose (Epoch 1 Constitution)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={newCovenantProse}
+                      onChange={(e) => setNewCovenantProse(e.target.value)}
+                      className="w-full bg-[#111420] border border-white/10 rounded-2xl p-4 text-xs text-white font-sans focus:outline-none focus:border-orange-500/50 leading-relaxed"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      Initial Action Manifest (JSON Array)
+                    </label>
+                    <textarea
+                      rows={6}
+                      value={newCovenantManifest}
+                      onChange={(e) => setNewCovenantManifest(e.target.value)}
+                      className="w-full bg-[#111420] border border-white/10 rounded-2xl p-4 text-xs text-amber-300 font-mono focus:outline-none focus:border-orange-500/50 leading-relaxed"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end pt-6 border-t border-white/5">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-xs shadow-lg shadow-orange-950/20 flex items-center gap-2 cursor-pointer transition-all"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span>Seal Genesis Covenant Baseline</span>
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              <form onSubmit={handleSealCovenant} className="bg-[#10131a] border border-white/5 rounded-2xl p-6 space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                      Covenant Name
-                    </label>
-                    <input
-                      type="text"
-                      value={newCovenantName}
-                      onChange={(e) => setNewCovenantName(e.target.value)}
-                      className="w-full bg-[#141722] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500/50"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                      Governance Domain
-                    </label>
-                    <input
-                      type="text"
-                      value={newCovenantDomain}
-                      onChange={(e) => setNewCovenantDomain(e.target.value)}
-                      className="w-full bg-[#141722] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-orange-500/50"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Baseline Mandate Prose (Epoch 1 Constitution)
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={newCovenantProse}
-                    onChange={(e) => setNewCovenantProse(e.target.value)}
-                    className="w-full bg-[#141722] border border-white/10 rounded-xl p-3 text-xs text-white font-sans focus:outline-none focus:border-orange-500/50"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Initial Action Manifest (JSON Array)
-                  </label>
-                  <textarea
-                    rows={6}
-                    value={newCovenantManifest}
-                    onChange={(e) => setNewCovenantManifest(e.target.value)}
-                    className="w-full bg-[#141722] border border-white/10 rounded-xl p-3 text-xs text-amber-300 font-mono focus:outline-none focus:border-orange-500/50"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-end pt-4 border-t border-white/5">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold text-xs shadow-lg shadow-orange-950/20 flex items-center gap-2 cursor-pointer transition-all"
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span>Seal Genesis Covenant Baseline</span>
-                  </button>
-                </div>
-              </form>
             </div>
           )}
 
           {/* TAB 5: SECURITY RADAR & ARCHITECTURE */}
           {activeTab === 'architecture' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <DragonFlowchart />
             </div>
           )}
         </main>
 
-        {/* Global Footer: Pinned cleanly at the bottom */}
-        <footer className="mt-auto border-t border-white/5 bg-[#0a0c12] py-6 text-xs text-slate-500">
+        {/* Global Footer: Clean, centered, and anchored at bottom */}
+        <footer className="mt-auto border-t border-white/5 bg-[#0a0c13] py-8 text-xs text-slate-500">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🐉</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-lg">🐉</span>
               <span className="font-semibold text-slate-300">WyrmWard Protocol</span>
               <span>&bull;</span>
               <span className="font-mono text-slate-400">GenLayer Studio Next (61997)</span>
@@ -1259,7 +1215,7 @@ export const App: React.FC = () => {
                 className="hover:text-orange-400 transition-colors flex items-center gap-1 font-mono"
               >
                 <span>Contract Explorer</span>
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
               <span>&bull;</span>
               <span>Built with GenLayer Intelligent Contracts & React 19</span>
