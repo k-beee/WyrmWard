@@ -345,7 +345,9 @@ export const App: React.FC = () => {
       {/* Permanent Fixed Left Sidebar */}
       <aside className="ww-sidebar">
         <div className="ww-brand">
-          <div className="ww-logo-badge">🐉</div>
+          <div className="ww-logo-badge">
+            <ShieldCheck size={22} color="#fff" />
+          </div>
           <div className="ww-brand-info">
             <h2>WYRMWARD</h2>
             <span>Governance Sentry</span>
@@ -492,7 +494,7 @@ export const App: React.FC = () => {
               <section className="ww-hero">
                 <div className="ww-hero-content">
                   <div className="ww-hero-badge">
-                    <span>🐉</span> GenVM Intelligent Governance Covenant
+                    <Shield size={13} color="var(--ww-ember)" /> GenVM Intelligent Governance Covenant
                   </div>
                   <h2>Autonomous Covenant & Revision Sentry</h2>
                   <p>
@@ -694,7 +696,7 @@ export const App: React.FC = () => {
                           <div className="ww-lineage-step active">
                             <div>
                               <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span>●</span> Epoch #1: Baseline Sealed
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--ww-emerald)', display: 'inline-block' }} /> Epoch #1: Baseline Sealed
                               </div>
                               <div style={{ fontSize: '12px', color: 'var(--ww-text-dim)', marginTop: '2px' }}>
                                 Active canon · 50,000 DAI allocation for cryptographic security reviews
@@ -707,7 +709,7 @@ export const App: React.FC = () => {
                             <div className="ww-lineage-step review">
                               <div>
                                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ww-gold)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span>●</span> Epoch #2: Revision in Review
+                                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--ww-gold)', display: 'inline-block' }} /> Epoch #2: Revision in Review
                                 </div>
                                 <div style={{ fontSize: '12px', color: 'var(--ww-text-dim)', marginTop: '2px' }}>
                                   Codicil #2 proposes +25,000 DAI expansion for ZK rollup bridge audits
@@ -1070,11 +1072,11 @@ export const App: React.FC = () => {
         {/* Global Anchored Footer */}
         <footer className="ww-footer">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🐉</span>
+            <Shield size={14} color="var(--ww-ember)" />
             <span style={{ fontWeight: 700, color: '#fff' }}>WyrmWard Protocol</span>
-            <span>&bull;</span>
+            <span style={{ opacity: 0.3 }}>/</span>
             <span style={{ fontFamily: 'var(--ww-font-mono)' }}>GenLayer Studio Next (61997)</span>
-            <span>&bull;</span>
+            <span style={{ opacity: 0.3 }}>/</span>
             <span style={{ color: 'var(--ww-emerald)', fontFamily: 'var(--ww-font-mono)' }}>Consensus Active</span>
           </div>
 
@@ -1086,7 +1088,7 @@ export const App: React.FC = () => {
             >
               Contract Explorer
             </a>
-            <span>&bull;</span>
+            <span style={{ opacity: 0.3 }}>/</span>
             <span>Python GenVM & React 19</span>
           </div>
         </footer>

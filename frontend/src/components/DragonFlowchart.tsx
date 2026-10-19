@@ -62,7 +62,7 @@ export const DragonFlowchart: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xl">🐉</span>
+            <ShieldCheck className="w-5 h-5 text-orange-400" />
             <h3 className="text-lg font-bold text-white tracking-wide">Dragon Sentry Architecture Radar</h3>
           </div>
           <p className="text-xs text-slate-400 mt-1">

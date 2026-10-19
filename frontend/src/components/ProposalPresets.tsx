@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ShieldAlert, FileText, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ShieldAlert, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export interface ProposalPreset {
   id: string;
@@ -136,7 +136,7 @@ export const ProposalPresets: React.FC<Props> = ({ onSelect }) => {
 
           <div style={{ marginTop: 'auto', paddingTop: '8px', borderTop: '1px solid var(--ww-border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--ww-ember)', fontWeight: 600 }}>
             <span>Load Template</span>
-            <span>&rarr;</span>
+            <ArrowRight size={13} />
           </div>
         </div>
       ))}
